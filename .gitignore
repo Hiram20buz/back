@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+.env
+firekeys.json
+.DS_Store

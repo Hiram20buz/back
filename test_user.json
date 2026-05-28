@@ -1,0 +1,9 @@
+{
+  "nombre": "José",
+  "apellido": "Triana",
+  "fecha_de_nacimiento": "15/08/1995",
+  "estado": "Jalisco",
+  "ciudad": "Guadalajara",
+  "correo_electronico": "jose.triana@example.com",
+  "password": "MiPasswordSeguro123"
+}
