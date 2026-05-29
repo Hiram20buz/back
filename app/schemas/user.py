@@ -9,6 +9,7 @@ class UserBase(BaseModel):
     estado: str = Field(..., example="Jalisco")
     ciudad: str = Field(..., example="Guadalajara")
     correo_electronico: EmailStr = Field(..., example="juan.perez@email.com")
+    role: str = Field(default="user", example="user")
 
     @field_validator("fecha_de_nacimiento")
     def validate_date_format(cls, v):
@@ -27,6 +28,10 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=6, example="contraseñaSegura123")
+
+class UserLogin(BaseModel):
+    correo_electronico: EmailStr = Field(..., example="juan.perez@email.com")
+    password: str = Field(..., example="contraseñaSegura123")
 
 class UserInDB(UserBase):
     hashed_password: str

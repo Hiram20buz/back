@@ -2,8 +2,8 @@ from fastapi import HTTPException, status
 from google.cloud.firestore_v1.client import Client
 from typing import List, Optional
 
-from app.schemas.user import UserCreate, UserInDB, UserResponse
-from app.utils.security import get_password_hash
+from app.schemas.user import UserCreate, UserInDB, UserResponse, UserLogin
+from app.utils.security import get_password_hash, verify_password
 from app.db.firebase import firebase_db
 
 COLLECTION_NAME = "users"
@@ -74,3 +74,35 @@ def get_users() -> List[UserResponse]:
         users.append(UserResponse(**user_data))
         
     return users
+
+def authenticate_user(login_data: UserLogin) -> UserResponse:
+    """Verifica las credenciales del usuario."""
+    # 1. Buscar al usuario por correo
+    user_dict = get_user_by_email(login_data.correo_electronico)
+    
+    if not user_dict:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="error al iniciar sesion"
+        )
+        
+    # 2. Verificar la contraseña
+    if not verify_password(login_data.password, user_dict["hashed_password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="error al iniciar sesion"
+        )
+        
+    # 3. Retornar los datos limpios si el login es correcto
+    # Primero necesitamos encontrar el ID real de Firestore, lo haremos con una pequeña consulta
+    db = _get_db()
+    query = db.collection(COLLECTION_NAME).where("correo_electronico", "==", login_data.correo_electronico).limit(1).stream()
+    
+    doc_id = None
+    for doc in query:
+        doc_id = doc.id
+        break
+        
+    user_dict["id"] = doc_id
+    # Excluimos explícitamente el hashed_password
+    return UserResponse(**user_dict)
